@@ -1,3 +1,7 @@
+--import statements
+import Graphics.Gloss
+
+
 module Main where
 
     main :: IO() 
@@ -75,6 +79,7 @@ module Main where
         }
 
 --test change 1
+
 
 
 
