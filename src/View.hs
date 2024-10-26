@@ -1,3 +1,4 @@
+
 -- | This module defines how to turn
 --   the game state into a picture
 module View where
@@ -9,15 +10,18 @@ import Data.Fixed (mod')
 view :: GameState -> IO Picture
 view = return . viewPure
 
+
 -- | Render game elements based on game state
 viewPure :: GameState -> Picture
-viewPure gstate = pictures [renderPlayer (player gstate), renderRoofFloor (world gstate)]
+viewPure gstate = pictures [renderPlayer (player gstate), renderRoofFloor (world gstate), renderHighScore gstate, renderScore gstate, renderHP gstate]
+
 
 -- | Render the player as a red triangle
 renderPlayer :: Player -> Picture
 renderPlayer player = translate (-350) (300 - y) $ color red $ polygon [(0, 30), (-30, -30), (30, -30)]
   where
     (_, y) = playerPosition player  -- Set x to 20, only change y based on input
+
 
 -- | Render scrolling roof and floor
 renderRoofFloor :: World -> Picture
@@ -35,7 +39,23 @@ renderRoofFloor world = pictures [roof, floor]
 
     windowWidth = 800
 
+
+-- | Render the high score
+renderHighScore :: GameState -> Picture
+renderHighScore gstate = translate (-380) 260 $ scale 0.15 0.15 $ color white $ text ("HighScore: " ++ show (highScore (score gstate)))
+
+
+-- | Render the current score
+renderScore :: GameState -> Picture
+renderScore gstate = translate (-380) 240 $ scale 0.15 0.15 $ color white $ text ("Score: " ++ show (currentScore (score gstate)))
+
+
+-- | Render the player's health
+renderHP :: GameState -> Picture
+renderHP gstate = translate (-380) (-275) $ scale 0.15 0.15 $ color white $ text ("HP: " ++ show (playerHealth (player gstate)))
+
+
 -- Custom color definitions
 darkBlue, customBlue :: Color
 darkBlue = makeColor 0 0 0.5 1
-customBlue = makeColor 0 0 1 1 
+customBlue = makeColor 0 0 1 1
