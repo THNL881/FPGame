@@ -57,4 +57,4 @@ movePlayer input p
   | otherwise      = p
   where
     (x, y) = playerPosition p
-    clampPosition (px, py) = (px, max 40 (min 560 py))  -- Constrain between 40 and 560 so that the player can't go out of bounds.
+    clampPosition (px, py) = (px, max 50 (min 550 py))  -- Constrain between 40 and 560 so that the player can't go out of bounds.
