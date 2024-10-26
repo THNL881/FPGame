@@ -15,6 +15,7 @@ data GameState = GameState {
                    world       :: World      -- The game world (scrolling, enemies)
                  , player      :: Player     -- The player character
                  , score       :: Score      -- Score data
+                 , highScore   :: Int        -- High score data
                  , gamestatus  :: GameStatus -- Current game status
                  , inputState  :: InputState -- Tracks current input keys
                  }
@@ -93,7 +94,8 @@ initialState :: GameState
 initialState = GameState {
                  world = World 0 100 [] Nothing,         -- Initial world state
                  player = Player (20, 300) 3 3 1 20 [] False, -- 20 pixels from left, centered height (assuming screen height is 600)
-                 score = Score 0 0,                      -- Initial score
+                 score = Score 0,
+                 highScore = 0,                      -- Initial score
                  gamestatus = Playing,                   -- Game starts in Playing mode
                  inputState = InputState False False False False -- No keys pressed initially
                }
