@@ -11,7 +11,7 @@ view = return . viewPure
 
 -- | Render game elements based on game state
 viewPure :: GameState -> Picture
-viewPure gstate = pictures [renderPlayer (player gstate), renderRoofFloor (world gstate), renderTexts gstate] --renders the things within the list
+viewPure gstate = pictures [renderPlayer (player gstate), renderRoofFloor (world gstate)]
 
 -- | Render the player as a red triangle
 renderPlayer :: Player -> Picture
@@ -35,16 +35,7 @@ renderRoofFloor world = pictures [roof, floor]
 
     windowWidth = 800
 
--- | Render the high score, current score, and player health
-renderTexts :: GameState -> Picture
-renderTexts gstate = pictures [highScoreText, scoreText, hpText]
-  where
-    highScoreText = translate (-380) 275 $ scale 0.5 0.5 $ color white $ text ("High Score: " ++ show (highScore gstate))
-    scoreText = translate (-380) 260 $ scale 0.5 0.5 $ color white $ text ("Score: " ++ show (currentScore (score gstate)))
-    hpText = translate (-380) (-275) $ scale 0.5 0.5 $ color white $ text ("HP: " ++ show (playerHealth (player gstate)))
-
-
 -- Custom color definitions
 darkBlue, customBlue :: Color
 darkBlue = makeColor 0 0 0.5 1
-customBlue = makeColor 0 0 1 1
+customBlue = makeColor 0 0 1 1 
