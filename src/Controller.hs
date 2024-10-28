@@ -31,10 +31,12 @@ input e gstate = do
 
 -- | Detect key presses and update input state
 inputKey :: Event -> InputState -> InputState
-inputKey (EventKey (Char 'w') Down _ _) is = is { moveUp = True }
-inputKey (EventKey (Char 'w') Up _ _)   is = is { moveUp = False }
-inputKey (EventKey (Char 's') Down _ _) is = is { moveDown = True }
-inputKey (EventKey (Char 's') Up _ _)   is = is { moveDown = False }
+inputKey (EventKey (Char 'w') Down _ _) is            = is { moveUp = True }
+inputKey (EventKey (Char 'w') Up _ _)   is            = is { moveUp = False }
+inputKey (EventKey (Char 's') Down _ _) is            = is { moveDown = True }
+inputKey (EventKey (Char 's') Up _ _)   is            = is { moveDown = False }
+inputKey (EventKey (SpecialKey KeySpace) Down _ _) is = is { shoot = True }
+inputKey (EventKey (SpecialKey KeySpace) Up _ _) is   = is { shoot = False }
 inputKey _ is = is
 
 
@@ -47,3 +49,9 @@ movePlayer input p
   where
     (x, y) = playerPosition p
     clampPosition (px, py) = (px, max 50 (min 550 py))  -- Constrain between 40 and 560 so that the player can't go out of bounds.
+
+shootPlayer :: InputState -> Player -> Projectile -> Player
+shootPlayer input p s 
+ | shoot input = p { isFiring = True, projectiles = s : projectiles p }
+ | otherwise   = p { isFiring = False }
+
