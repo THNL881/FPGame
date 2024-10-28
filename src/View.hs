@@ -13,7 +13,20 @@ view = return . viewPure
 
 -- | Render game elements based on game state
 viewPure :: GameState -> Picture
-viewPure gstate = pictures [renderPlayer (player gstate), renderRoofFloor (world gstate), renderHighScore gstate, renderScore gstate, renderHP gstate]
+viewPure gstate = pictures 
+  [ renderPlayer (player gstate)
+  , renderRoofFloor (world gstate)
+  , renderHighScore gstate
+  , renderScore gstate
+  , renderHP gstate
+  , renderProjectileList (projectiles (player gstate))]
+
+renderProjectileList :: [Projectile] -> Picture
+renderProjectileList list = pictures (map renderSingleProjectile list)
+
+-- renders a single projectile as red dot   
+renderSingleProjectile :: Projectile -> Picture
+renderSingleProjectile p = uncurry translate (position p) (color white (circleSolid 60))
 
 
 -- | Render the player as a red triangle

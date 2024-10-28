@@ -12,11 +12,18 @@ import System.Random
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
+  let updatedProjectiles = map (moveProjectile secs) (projectiles (player gstate))
+  let updatedPlayer = (player gstate) { projectiles = updatedProjectiles }
   let newGState = gstate { world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs } }
   -- Add logic here to update the score based on game events
   -- For example, increase score when an enemy is defeated
   return newGState
 
+--projectile logic
+moveProjectile :: Float -> Projectile -> Projectile
+moveProjectile secs proj = proj { position = (x + speed proj * secs, y) }
+  where
+    (x, y) = position proj
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
@@ -50,8 +57,10 @@ movePlayer input p
     (x, y) = playerPosition p
     clampPosition (px, py) = (px, max 50 (min 550 py))  -- Constrain between 40 and 560 so that the player can't go out of bounds.
 
-shootPlayer :: InputState -> Player -> Projectile -> Player
-shootPlayer input p s 
- | shoot input = p { isFiring = True, projectiles = s : projectiles p }
- | otherwise   = p { isFiring = False }
+shootPlayer :: InputState -> Player -> Player
+shootPlayer input p 
+ | shoot input && not (isFiring p) = p { isFiring = True, projectiles = newProjectile : projectiles p }
+ | not (shoot input)               = p { isFiring = False }
+ | otherwise                       = p 
+ where newProjectile = Projectile { position = playerPosition p, speed = 5 }
 
