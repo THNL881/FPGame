@@ -20,6 +20,7 @@ data GameState = GameState {
                  , score       :: Score      -- Score data
                  , gamestatus  :: GameStatus -- Current game status
                  , inputState  :: InputState -- Tracks current input keys
+                 , elapsedTime :: Float      -- Time elapsed in seconds
                  }
 
 
@@ -106,8 +107,9 @@ type Position = (Float, Float)
 initialState :: GameState
 initialState = GameState {
                  world = World 0 100 [] Nothing,         -- Initial world state
-                 player = Player (20, 300) 3 3 1 20 [] False, -- 20 pixels from left, centered height (assuming screen height is 600)
+                 player = Player (20, 300) 3 3 1 20 [] False, -- Player initial state
                  score = Score 0 0,                      -- Initial score and high score
                  gamestatus = Playing,                   -- Game starts in Playing mode
-                 inputState = InputState False False False False -- No keys pressed initially
+                 inputState = InputState False False False False, -- No keys pressed initially
+                 elapsedTime = 0                         -- Initial elapsed time set to 0
                }

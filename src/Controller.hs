@@ -10,14 +10,17 @@ import System.Random
 
 
 -- | Handle one iteration of the game
+-- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
   let updatedProjectiles = map (moveProjectile secs) (projectiles (player gstate))
   let updatedPlayer = (player gstate) { projectiles = updatedProjectiles }
-  let newGState = gstate { world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs } }
-  -- Add logic here to update the score based on game events
-  -- For example, increase score when an enemy is defeated
+  let newGState = gstate { 
+                  world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
+                  elapsedTime = elapsedTime gstate + secs -- Update elapsed time
+                 }
   return newGState
+
 
 --projectile logic
 moveProjectile :: Float -> Projectile -> Projectile

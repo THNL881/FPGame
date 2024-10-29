@@ -19,7 +19,14 @@ viewPure gstate = pictures
   , renderHighScore gstate
   , renderScore gstate
   , renderHP gstate
+  , renderElapsedTime gstate
   , renderProjectileList (projectiles (player gstate))]
+
+
+-- | Render the elapsed time
+renderElapsedTime :: GameState -> Picture
+renderElapsedTime gstate = translate 220 250 $ scale 0.15 0.15 $ color white $ text ("Time Elapsed: " ++ show (round (elapsedTime gstate)))
+
 
 renderProjectileList :: [Projectile] -> Picture
 renderProjectileList list = pictures (map renderSingleProjectile list)
