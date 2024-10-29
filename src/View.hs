@@ -31,16 +31,18 @@ renderElapsedTime gstate = translate 220 250 $ scale 0.15 0.15 $ color white $ t
 renderProjectileList :: [Projectile] -> Picture
 renderProjectileList list = pictures (map renderSingleProjectile list)
 
--- renders a single projectile as red dot   
+
+-- Render a single projectile as a 5x5 white triangle
 renderSingleProjectile :: Projectile -> Picture
-renderSingleProjectile p = uncurry translate (position p) (color white (circleSolid 60))
+renderSingleProjectile p = uncurry translate (position p) (color white $ polygon [(0, 0), (5, 2.5), (0, 5)])
+
 
 
 -- | Render the player as a red triangle
 renderPlayer :: Player -> Picture
-renderPlayer player = translate (-350) (300 - y) $ color red $ polygon [(0, 30), (-30, -30), (30, -30)]
+renderPlayer player = translate x y $ color red $ polygon [(0, 30), (-30, -30), (30, -30)]
   where
-    (_, y) = playerPosition player  -- Set x to 20, only change y based on input
+    (x, y) = playerPosition player
 
 
 -- | Render scrolling roof and floor
