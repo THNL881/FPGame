@@ -106,6 +106,11 @@ shootPlayer input p
    -- Make sure the projectile starts at the player's actual position
    newProjectile = Projectile { position = playerPosition p, speed = 80 }
 
+spawnBoss :: GameState -> GameState
+spawnBoss gstate = gstate { bossGame = newBoss }
+  where newBoss = Boss 5 (100, 0) True
+
+
 spawnShooterEnemy :: GameState -> IO GameState
 spawnShooterEnemy gstate = do
     randomY <- randomRIO (-200, 200)  -- Y-coordinate range from -200 to 200

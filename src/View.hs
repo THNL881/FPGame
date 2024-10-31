@@ -73,7 +73,7 @@ renderEnemiesCount gstate = translate 0 (-100) $ scale 0.15 0.15 $ color white $
 
 -- | Render the player as a red triangle
 renderPlayer :: Player -> Picture
-renderPlayer player = translate x y $ color red $ polygon [(0, 30), (-30, -30), (30, -30)]
+renderPlayer player = translate x y $ color white $ polygon [(0, 30), (-30, -30), (30, -30)]
   where
     (x, y) = playerPosition player
 
