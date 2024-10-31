@@ -8,18 +8,27 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
 
-
--- | Handle one iteration of the game
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
-  let updatedProjectiles = updateProjectiles secs (projectiles (player gstate))
-  let updatedPlayer = (player gstate) { projectiles = updatedProjectiles }
-  let newGState = gstate { 
-                  player = updatedPlayer,
-                  world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
-                  elapsedTime = elapsedTime gstate + secs
-                 }
+  let 
+    newSpawnTimer = spawnTimer gstate + secs
+    (gstateNew, resetTimer) = 
+      if newSpawnTimer >= 2
+        then (spawnKamikazeEnemy gstate, 0)
+        else (gstate, newSpawnTimer)
+
+    updatedEnemies = updateEnemies secs gstateNew (enemiesGame gstateNew)
+    updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
+    updatedPlayer = (player gstateNew) { projectiles = updatedProjectiles }
+    newGState = gstate { 
+        player = updatedPlayer,
+        spawnTimer = resetTimer,
+        world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
+        elapsedTime = elapsedTime gstate + secs,
+        enemiesGame = updatedEnemies,
+        rng = rng gstateNew
+        }
   return newGState
 
 
@@ -35,6 +44,21 @@ moveProjectile :: Float -> Projectile -> Projectile
 moveProjectile secs proj = proj { position = (x + speed proj * secs, y) }
   where
     (x, y) = position proj
+
+
+--enemy logic and update function
+updateEnemies :: Float -> GameState -> [Enemy] -> [Enemy]
+updateEnemies secs gstate = filter inBounds . map (moveEnemy secs gstate)
+  where 
+    inBounds enemy = fst (enemyPosition enemy) >= -500
+
+moveEnemy :: Float -> GameState -> Enemy -> Enemy
+moveEnemy secs gstate enemy = enemy { enemyPosition = (x + enemySpeedX * secs, y + enemySpeedY) }
+  where (x, y) = enemyPosition enemy
+        (enemySpeedX, _) = enemySpeed enemy
+        enemySpeedY | snd (playerPosition (player gstate)) > y = 0.5
+                    | snd (playerPosition (player gstate)) < y = -0.5
+                    | otherwise = y
 
 
 -- | Handle user input
@@ -82,4 +106,23 @@ shootPlayer input p
    -- Make sure the projectile starts at the player's actual position
    newProjectile = Projectile { position = playerPosition p, speed = 80 }
 
+spawnShooterEnemy :: GameState -> IO GameState
+spawnShooterEnemy gstate = do
+    randomY <- randomRIO (-200, 200)  -- Y-coordinate range from -200 to 200
+    let newEnemy = Enemy { enemyType = Shooter
+                         , enemyPosition = (400, randomY)  -- Starting position
+                         , enemyHealth = 100
+                         , enemySpeed = (-3, 0)
+                         , dropHealth = False
+                         }
+    return gstate { enemiesGame = newEnemy : enemiesGame gstate } --needs to be randomized
 
+spawnKamikazeEnemy :: GameState -> GameState 
+spawnKamikazeEnemy gstate = gstate { enemiesGame = newEnemy : enemiesGame gstate, rng = newRng}
+  where newEnemy = Enemy { enemyType = Kamikaze
+                         , enemyPosition = (200, randomY)
+                         , enemyHealth = 3
+                         , enemySpeed = (-80, 0)
+                         , dropHealth = False
+                        }
+        (randomY, newRng) = randomR (-200, 200) (rng gstate)  -- Generate random Y and update generator

@@ -19,13 +19,45 @@ viewPure gstate = pictures
   , renderHighScore gstate
   , renderScore gstate
   , renderHP gstate
-  , renderElapsedTime gstate
-  , renderProjectileList (projectiles (player gstate))]
+  --, renderElapsedTime gstate
+  , renderProjectileList (projectiles (player gstate))
+  , renderEnemies (enemiesGame gstate)
+  , renderSpawnTimer gstate
+  , renderDebugString gstate
+  , renderEnemiesCount gstate
+  -- , renderCurrentStdGen gstate
+  , renderEnemyPositions (enemiesGame gstate)]
 
+renderEnemyPositions :: [Enemy] -> Picture
+renderEnemyPositions enemies = translate (-380) (-200) $ scale 0.1 0.1 $
+  color white $ text $ unlines (map (show . enemyPosition) enemies)
+
+renderDebugString :: GameState -> Picture
+renderDebugString gstate 
+  = translate 0 0 $ scale 0.15 0.15 $ color white $ text ("debug string: " ++ show (debugString gstate))
+
+renderCurrentStdGen :: GameState -> Picture
+renderCurrentStdGen gstate 
+  = translate (-300) (-150) $ scale 0.15 0.15 $ color white $ text ("rng: " ++ show (rng gstate))
+
+renderEnemies :: [Enemy] -> Picture
+renderEnemies = pictures . map renderEnemy 
+
+renderEnemy :: Enemy -> Picture
+renderEnemy enemy = case enemyType enemy of 
+  Kamikaze -> renderKamikazeEnemy enemy
+
+renderKamikazeEnemy :: Enemy -> Picture
+renderKamikazeEnemy enemy = translate x y $ color white $ circleSolid 10
+  where
+    (x, y) = enemyPosition enemy
 
 -- | Render the elapsed time
-renderElapsedTime :: GameState -> Picture
-renderElapsedTime gstate = translate 220 250 $ scale 0.15 0.15 $ color white $ text ("Time Elapsed: " ++ show (round (elapsedTime gstate)))
+-- renderElapsedTime :: GameState -> Picture
+-- renderElapsedTime gstate = translate 220 250 $ scale 0.15 0.15 $ color white $ text ("Time Elapsed: " ++ show (round (elapsedTime gstate)))
+
+renderSpawnTimer :: GameState -> Picture
+renderSpawnTimer gstate =  translate 100 100 $ scale 0.15 0.15 $ color white $ text ("spawntimer Elapsed: " ++ show (spawnTimer gstate)) 
 
 
 renderProjectileList :: [Projectile] -> Picture
@@ -34,9 +66,10 @@ renderProjectileList list = pictures (map renderSingleProjectile list)
 
 -- Render a single projectile as a 5x5 white triangle
 renderSingleProjectile :: Projectile -> Picture
-renderSingleProjectile p = uncurry translate (position p) (color white $ polygon [(0, 0), (5, 2.5), (0, 5)])
+renderSingleProjectile p = uncurry translate (position p) (color white $ polygon [(0, 0), (10, 2.5), (0, 5)])
 
-
+renderEnemiesCount :: GameState -> Picture
+renderEnemiesCount gstate = translate 0 (-100) $ scale 0.15 0.15 $ color white $ text ("length enemy list: " ++ show (length (enemiesGame gstate))) 
 
 -- | Render the player as a red triangle
 renderPlayer :: Player -> Picture

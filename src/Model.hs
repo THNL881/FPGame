@@ -2,6 +2,7 @@
 -- | This module contains the data types
 --   which represent the state of the game
 module Model where
+import System.Random (StdGen, mkStdGen)
 
 
 -- Information to show, for debugging or other simple displays
@@ -15,12 +16,16 @@ nO_SECS_BETWEEN_CYCLES = 5
 
 -- | Complete game state, including player, world, score, and status
 data GameState = GameState {
-                   world       :: World      -- The game world (scrolling, enemies)
-                 , player      :: Player     -- The player character
-                 , score       :: Score      -- Score data
-                 , gamestatus  :: GameStatus -- Current game status
-                 , inputState  :: InputState -- Tracks current input keys
-                 , elapsedTime :: Float      -- Time elapsed in seconds
+                   world            :: World      -- The game world (scrolling, enemies)
+                 , player           :: Player     -- The player character
+                 , score            :: Score      -- Score data
+                 , gamestatus       :: GameStatus -- Current game status
+                 , inputState       :: InputState -- Tracks current input keys
+                 , elapsedTime      :: Float      -- Time elapsed in seconds
+                 , spawnTimer       :: Float      -- Timer that tracks shooting enemies interval
+                 , enemiesGame      :: [Enemy]    -- Enemies in the game
+                 , rng              :: StdGen     -- Pure randomness
+                 , debugString      :: String     -- debugging things
                  }
 
 
@@ -111,5 +116,9 @@ initialState = GameState {
                  score = Score 0 0,                            -- Initial score and high score
                  gamestatus = Playing,                         -- Game starts in Playing mode
                  inputState = InputState False False False False, -- No keys pressed initially
-                 elapsedTime = 0                               -- Initial elapsed time set to 0
+                 elapsedTime = 0,                               -- Initial elapsed time set to 0
+                 spawnTimer = 0,
+                 enemiesGame = [],
+                 rng = mkStdGen 42,
+                 debugString = []
                }
