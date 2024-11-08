@@ -38,7 +38,6 @@ data World = World {
                    scrollPosition :: Float  -- How far the world has scrolled
                  , scrollSpeed    :: Float  -- Speed of scrolling
                  , enemies        :: [Enemy] -- List of enemies in the world
-                 , boss           :: Maybe Boss -- Optional boss enemy
                  }
 
 
@@ -111,7 +110,7 @@ type Position = (Float, Float)
 -- | Initial game state setup
 initialState :: GameState
 initialState = GameState {
-                 world = World 0 100 [] Nothing,               -- Initial world state
+                 world = World 0 100 [],               -- Initial world state
                  player = Player (-360, 0) 3 3 1 20 [] False,  -- Player initial state at (-380, 0)
                  score = Score 0 0,                            -- Initial score and high score
                  gamestatus = Playing,                         -- Game starts in Playing mode
