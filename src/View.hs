@@ -6,6 +6,7 @@ module View where
 import Graphics.Gloss
 import Model
 import Data.Fixed (mod')
+import Data.Maybe (isJust)
 
 view :: GameState -> IO Picture
 view = return . viewPure
@@ -23,29 +24,37 @@ viewPure gstate = pictures
   , renderProjectileList (projectiles (player gstate))
   , renderEnemies (enemiesGame gstate)
   , renderSpawnTimer gstate
-  , renderDebugString gstate
   , renderEnemiesCount gstate
-  -- , renderCurrentStdGen gstate
-  , renderEnemyPositions (enemiesGame gstate)]
+  , renderEnemyPositions (enemiesGame gstate)
+  , renderDeathAllEnemies (enemiesGame gstate)
+  , renderEnemyDeathTest]
 
 renderEnemyPositions :: [Enemy] -> Picture
 renderEnemyPositions enemies = translate (-380) (-200) $ scale 0.1 0.1 $
-  color white $ text $ unlines (map (show . enemyPosition) enemies)
+  color white $ text $ unlines (map (show . enemyHealth) enemies)
 
-renderDebugString :: GameState -> Picture
-renderDebugString gstate 
-  = translate 0 0 $ scale 0.15 0.15 $ color white $ text ("debug string: " ++ show (debugString gstate))
+renderDeathAnimation :: Enemy -> Picture
+renderDeathAnimation enemy = case deathAnimationTimer enemy of 
+  Just progress -> let (x, y) = enemyPosition enemy
+                       scalar = 1 + progress * 2
+                       opacity = 1 - progress
+                   in translate x y $ color (makeColor 1 0 0 opacity) $ scale scalar scalar $ circleSolid 15
+renderDeathAllEnemies :: [Enemy] -> Picture
+renderDeathAllEnemies enemies = pictures (map renderDeathAnimation (filter alive enemies))
+  where alive enemy = not (isJust (deathAnimationTimer enemy))
 
-renderCurrentStdGen :: GameState -> Picture
-renderCurrentStdGen gstate 
-  = translate (-300) (-150) $ scale 0.15 0.15 $ color white $ text ("rng: " ++ show (rng gstate))
+renderEnemyDeathTest :: Picture
+renderEnemyDeathTest = renderDeathAnimation newEnemy
+  where newEnemy = Enemy { enemyType = Kamikaze, enemyPosition = (100, 100), enemyHealth = 0, enemySpeed = (-40, 0), isDead = False, deathAnimationTimer = Just 0 } 
 
 renderEnemies :: [Enemy] -> Picture
 renderEnemies = pictures . map renderEnemy 
 
 renderEnemy :: Enemy -> Picture
 renderEnemy enemy = case enemyType enemy of 
-  Kamikaze -> renderKamikazeEnemy enemy
+  Kamikaze -> if isJust (deathAnimationTimer enemy) 
+                then renderDeathAnimation enemy
+                else renderKamikazeEnemy enemy
 
 renderKamikazeEnemy :: Enemy -> Picture
 renderKamikazeEnemy enemy = translate x y $ color white $ circleSolid 10

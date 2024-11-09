@@ -43,23 +43,24 @@ data World = World {
 
 -- | The player character
 data Player = Player {
-                   playerPosition  :: Position -- Current position
-                 , playerHealth    :: Int      -- Health of the player
-                 , playerMaxHealth :: Int      -- Max health
-                 , playerDamage    :: Int      -- Damage dealt by player
-                 , playerSpeed     :: Float    -- Speed of player movement
-                 , projectiles     :: [Projectile] -- Projectiles fired by player
-                 , isFiring        :: Bool     -- True if player is firing
+                   playerPosition  :: Position      -- Current position
+                 , playerHealth    :: Int           -- Health of the player
+                 , playerMaxHealth :: Int           -- Max health
+                 , playerDamage    :: Int           -- Damage dealt by player
+                 , playerSpeed     :: Float         -- Speed of player movement
+                 , projectiles     :: [Projectile]  -- Projectiles fired by player
+                 , isFiring        :: Bool          -- True if player is firing
                  }
 
 
 -- | Enemy character data
 data Enemy = Enemy {
-                   enemyType     :: EnemyType  -- Type of enemy (Shooter, Kamikaze, etc.)
-                 , enemyPosition :: Position   -- Position of the enemy
-                 , enemyHealth   :: Int        -- Health of the enemy
-                 , enemySpeed    :: Position   -- Speed (x, y) of enemy
-                 , dropHealth    :: Bool       -- Drops health if true
+                   enemyType           :: EnemyType        -- Type of enemy (Shooter, Kamikaze, etc.)
+                 , enemyPosition       :: Position         -- Position of the enemy
+                 , enemyHealth         :: Int              -- Health of the enemy
+                 , enemySpeed          :: Position         -- Speed (x, y) of enemy
+                 , isDead              :: Bool             -- Drops health if true
+                 , deathAnimationTimer :: Maybe Float      -- times the animation when an enemy dies
                  }
 
 data EnemyType = Shooter | Kamikaze

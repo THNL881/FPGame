@@ -7,6 +7,7 @@ import Model
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
+import Data.Maybe (isNothing)
 
 -- | Handle one iteration of the game
 step :: Float -> GameState -> IO GameState
@@ -48,9 +49,21 @@ moveProjectile secs proj = proj { position = (x + speed proj * secs, y) }
 
 --enemy logic and update function
 updateEnemies :: Float -> GameState -> [Enemy] -> [Enemy]
-updateEnemies secs gstate = filter inBounds . map (moveEnemy secs gstate)
+updateEnemies secs gstate = map checkDamageBarrier . map updateEnemy . filter alive . filter inBounds
   where 
+    updateEnemy enemy | enemyHealth enemy <= 0 && isNothing (deathAnimationTimer enemy) = enemy { deathAnimationTimer = Just 0 } 
+                      | otherwise = checkDeadOrLiving secs enemy
+
+    checkDeadOrLiving secs enemy = case deathAnimationTimer enemy of 
+      Just progress | progress < 10 -> enemy { deathAnimationTimer = Just (progress + 0.5)} 
+      Just _                        -> enemy { isDead = True }
+      Nothing                       -> moveEnemy secs gstate enemy
+    
+    checkDamageBarrier enemy = if fst (enemyPosition enemy) <= 50 then enemy { enemyHealth = enemyHealth enemy - 1} else enemy 
+
     inBounds enemy = fst (enemyPosition enemy) >= -500
+    alive enemy = enemyHealth enemy > 0
+    
 
 moveEnemy :: Float -> GameState -> Enemy -> Enemy
 moveEnemy secs gstate enemy = enemy { enemyPosition = (x + enemySpeedX * secs, y + enemySpeedY) }
@@ -115,7 +128,8 @@ spawnShooterEnemy gstate = do
                          , enemyPosition = (400, randomY)  -- Starting position
                          , enemyHealth = 100
                          , enemySpeed = (-3, 0)
-                         , dropHealth = False
+                         , isDead = False
+                         , deathAnimationTimer = Nothing
                          }
     return gstate { enemiesGame = newEnemy : enemiesGame gstate } --needs to be randomized
 
@@ -123,8 +137,9 @@ spawnKamikazeEnemy :: GameState -> GameState
 spawnKamikazeEnemy gstate = gstate { enemiesGame = newEnemy : enemiesGame gstate, rng = newRng}
   where newEnemy = Enemy { enemyType = Kamikaze
                          , enemyPosition = (200, randomY)
-                         , enemyHealth = 3
+                         , enemyHealth = 1
                          , enemySpeed = (-80, 0)
-                         , dropHealth = False
+                         , isDead = False
+                         , deathAnimationTimer = Nothing
                         }
         (randomY, newRng) = randomR (-200, 200) (rng gstate)  -- Generate random Y and update generator
