@@ -8,48 +8,55 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
 import Data.Maybe ( isNothing, mapMaybe )
-import Debug.Trace
 
 -- | Handle one iteration of the game 
 
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
-  let 
-    newSpawnTimer = spawnTimer gstate + secs
-    (gstateNew, resetTimer) = 
-      if newSpawnTimer >= 2
-        then (spawnKamikazeEnemy gstate, 0) 
-        else (gstate, newSpawnTimer)
+  case gamestatus gstate of
+    Playing -> updateGame secs gstate
+    Cleared -> endGame gstate
 
-    updatedEnemies = updateEnemies secs gstateNew (enemiesGame gstateNew)
-    updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
-    updatedPlayer = (player gstateNew) { projectiles = updatedProjectiles }
-    updatedScore = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
-    defeatedEnemies = length (enemiesGame gstateNew) - length updatedEnemies
-    updatedGState = gamestatus gstateNew
+updateGame :: Float -> GameState -> IO GameState
+updateGame secs gstate = do
+   let newSpawnTimer = spawnTimer gstate + secs
+       (gstateNew, resetTimer) = 
+        --  if newSpawnTimer >= 2
+        --    then (spawnKamikazeEnemy gstate, 0) 
+        --    else (gstate, newSpawnTimer)
+         if newSpawnTimer >= 3
+           then (gstate { gamestatus = Cleared}, newSpawnTimer)
+           else (gstate, newSpawnTimer)
+       updatedEnemies = updateEnemies secs gstateNew (enemiesGame gstateNew)
+       updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
+       updatedPlayer = (player gstateNew) { projectiles = updatedProjectiles }
+       updatedScore = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
+       defeatedEnemies = length (enemiesGame gstateNew) - length updatedEnemies
+       updatedGStatus = gamestatus gstateNew
 
+       newGState = gstate { 
+       player = updatedPlayer,
+       score = updatedScore,
+       gamestatus = updatedGStatus,
+       spawnTimer = resetTimer,
+       world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
+       elapsedTime = elapsedTime gstate + secs,
+       enemiesGame = updatedEnemies,
+       rng = rng gstateNew
+      } 
+   return newGState 
 
-    newGState = gstate { 
-        player = updatedPlayer,
-        score = updatedScore,
-        gamestatus = updatedGState,
-        spawnTimer = resetTimer,
-        world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
-        elapsedTime = elapsedTime gstate + secs,
-        enemiesGame = updatedEnemies,
-        rng = rng gstateNew
-        }
-    
-    -- writeScoreToFile "testScore.txt" (currentScore updatedScore)
+endGame :: GameState -> IO GameState
+endGame gstate = do
+  let clearedGstate = gstate {gamestatus = Cleared }
 
-  return newGState 
+  return clearedGstate
  
-
+    
 -- | Write score to a standard filePath
 writeScoreToFile :: FilePath -> Int -> IO ()
 writeScoreToFile filePath score = do
     appendFile filePath scoreString
-    putStrLn $ "Score saved to " ++ filePath
       where 
         scoreString = show score ++ "\n"
 

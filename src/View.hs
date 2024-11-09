@@ -25,7 +25,18 @@ viewPure gstate = pictures
   , renderEnemies (enemiesGame gstate)
   , renderSpawnTimer gstate
   , renderEnemiesCount gstate
-  , renderEnemyPositions (enemiesGame gstate)]
+  , renderEnemyPositions (enemiesGame gstate)
+  , renderEndScreen (gamestatus gstate)]
+
+
+renderEndScreen :: GameStatus -> Picture
+renderEndScreen status 
+  = case status of 
+     Cleared 
+       -> translate (-200) 0 $ scale 0.6 0.6 $ color red $ text "YOU DIED"
+     _ -> Blank
+    
+
 
 renderEnemyPositions :: [Enemy] -> Picture
 renderEnemyPositions enemies = translate (-380) (-200) $ scale 0.1 0.1 $
