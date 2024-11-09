@@ -7,31 +7,44 @@ import Model
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
-import Data.Maybe (isNothing)
+import Data.Maybe ( isNothing, mapMaybe )
+import Debug.Trace
 
--- | Handle one iteration of the game
+-- | Handle one iteration of the game 
+
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
   let 
     newSpawnTimer = spawnTimer gstate + secs
     (gstateNew, resetTimer) = 
-      if newSpawnTimer >= 2
-        then (spawnKamikazeEnemy gstate, 0)
+      if newSpawnTimer >= 2 
+        then (spawnKamikazeEnemy gstate, 0) 
         else (gstate, newSpawnTimer)
-
+    
     updatedEnemies = updateEnemies secs gstateNew (enemiesGame gstateNew)
     updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
     updatedPlayer = (player gstateNew) { projectiles = updatedProjectiles }
+    updatedScore = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
+    defeatedEnemies = length (enemiesGame gstateNew) - length updatedEnemies
+
     newGState = gstate { 
         player = updatedPlayer,
+        score = updatedScore,
         spawnTimer = resetTimer,
         world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
         elapsedTime = elapsedTime gstate + secs,
         enemiesGame = updatedEnemies,
         rng = rng gstateNew
         }
-  return newGState
+  return newGState 
 
+
+-- | Check if a projectile and an enemy are colliding
+isCollision :: Projectile -> Enemy -> Bool
+isCollision proj enemy = abs (px - ex) < 10 && abs (py - ey) < 10
+  where
+    (px, py) = position proj
+    (ex, ey) = enemyPosition enemy
 
 
 --projectile logic
@@ -46,23 +59,32 @@ moveProjectile secs proj = proj { position = (x + speed proj * secs, y) }
   where
     (x, y) = position proj
 
-
 --enemy logic and update function
+-- | Update enemies, checking for collisions with projectiles
 updateEnemies :: Float -> GameState -> [Enemy] -> [Enemy]
-updateEnemies secs gstate = map checkDamageBarrier . map updateEnemy . filter alive . filter inBounds
+updateEnemies secs gstate = filter inBounds . map (updateEnemy secs gstate)
   where 
-    updateEnemy enemy | enemyHealth enemy <= 0 && isNothing (deathAnimationTimer enemy) = enemy { deathAnimationTimer = Just 0 } 
-                      | otherwise = checkDeadOrLiving secs enemy
+    updateEnemy secs gstate enemy
+      | enemyHealth enemy <= 0 = checkDeath enemy  -- Start death animation when health <= 0
+      | otherwise = 
+          let 
+              enemy' = moveEnemy secs gstate enemy
+              (enemyHit, remainingProjectiles) = checkCollision enemy' (projectiles (player gstate))
+              updatedEnemy = if enemyHit then enemy' { enemyHealth = enemyHealth enemy' - 1 } else enemy'
+          in if enemyHit && enemyHealth updatedEnemy <= 0
+             then updatedEnemy { isDead = True }  -- Enemy is defeated, remove it
+             else updatedEnemy
+      where
+        -- Check for collision and filter out hit projectiles     
+        checkCollision enemy = foldr (\proj (hit, projs) ->
+          if isCollision proj enemy then (True, projs) else (hit, proj : projs)) (False, [])
 
-    checkDeadOrLiving secs enemy = case deathAnimationTimer enemy of 
-      Just progress | progress < 10 -> enemy { deathAnimationTimer = Just (progress + 0.5)} 
+    checkDeath enemy = case deathAnimationTimer enemy of 
+      Just progress | progress < 10 -> enemy { deathAnimationTimer = Just (progress + 0.1)} 
       Just _                        -> enemy { isDead = True }
-      Nothing                       -> moveEnemy secs gstate enemy
-    
-    checkDamageBarrier enemy = if fst (enemyPosition enemy) <= 50 then enemy { enemyHealth = enemyHealth enemy - 1} else enemy 
+      Nothing                       -> enemy { deathAnimationTimer = Just 0 }
 
     inBounds enemy = fst (enemyPosition enemy) >= -500
-    alive enemy = enemyHealth enemy > 0
     
 
 moveEnemy :: Float -> GameState -> Enemy -> Enemy
@@ -137,7 +159,7 @@ spawnKamikazeEnemy :: GameState -> GameState
 spawnKamikazeEnemy gstate = gstate { enemiesGame = newEnemy : enemiesGame gstate, rng = newRng}
   where newEnemy = Enemy { enemyType = Kamikaze
                          , enemyPosition = (200, randomY)
-                         , enemyHealth = 1
+                         , enemyHealth = 3
                          , enemySpeed = (-80, 0)
                          , isDead = False
                          , deathAnimationTimer = Nothing

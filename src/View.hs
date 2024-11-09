@@ -6,7 +6,7 @@ module View where
 import Graphics.Gloss
 import Model
 import Data.Fixed (mod')
-import Data.Maybe (isJust)
+import Data.Maybe (isJust, isNothing)
 
 view :: GameState -> IO Picture
 view = return . viewPure
@@ -25,9 +25,7 @@ viewPure gstate = pictures
   , renderEnemies (enemiesGame gstate)
   , renderSpawnTimer gstate
   , renderEnemiesCount gstate
-  , renderEnemyPositions (enemiesGame gstate)
-  , renderDeathAllEnemies (enemiesGame gstate)
-  , renderEnemyDeathTest]
+  , renderEnemyPositions (enemiesGame gstate)]
 
 renderEnemyPositions :: [Enemy] -> Picture
 renderEnemyPositions enemies = translate (-380) (-200) $ scale 0.1 0.1 $
@@ -39,13 +37,6 @@ renderDeathAnimation enemy = case deathAnimationTimer enemy of
                        scalar = 1 + progress * 2
                        opacity = 1 - progress
                    in translate x y $ color (makeColor 1 0 0 opacity) $ scale scalar scalar $ circleSolid 15
-renderDeathAllEnemies :: [Enemy] -> Picture
-renderDeathAllEnemies enemies = pictures (map renderDeathAnimation (filter alive enemies))
-  where alive enemy = not (isJust (deathAnimationTimer enemy))
-
-renderEnemyDeathTest :: Picture
-renderEnemyDeathTest = renderDeathAnimation newEnemy
-  where newEnemy = Enemy { enemyType = Kamikaze, enemyPosition = (100, 100), enemyHealth = 0, enemySpeed = (-40, 0), isDead = False, deathAnimationTimer = Just 0 } 
 
 renderEnemies :: [Enemy] -> Picture
 renderEnemies = pictures . map renderEnemy 
