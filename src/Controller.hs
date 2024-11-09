@@ -7,8 +7,10 @@ import Model
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
+import Data.Maybe (mapMaybe)
 
--- | Handle one iteration of the game
+-- | Handle one iteration of the game 
+
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
   let 
@@ -21,16 +23,27 @@ step secs gstate = do
     updatedEnemies = updateEnemies secs gstateNew (enemiesGame gstateNew)
     updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
     updatedPlayer = (player gstateNew) { projectiles = updatedProjectiles }
+    updatedScore = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
+    defeatedEnemies = length (enemiesGame gstateNew) - length updatedEnemies
+
     newGState = gstate { 
         player = updatedPlayer,
+        score = updatedScore,
         spawnTimer = resetTimer,
         world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
         elapsedTime = elapsedTime gstate + secs,
         enemiesGame = updatedEnemies,
         rng = rng gstateNew
         }
-  return newGState
+  return newGState 
 
+
+-- | Check if a projectile and an enemy are colliding
+isCollision :: Projectile -> Enemy -> Bool
+isCollision proj enemy = abs (px - ex) < 10 && abs (py - ey) < 10
+  where
+    (px, py) = position proj
+    (ex, ey) = enemyPosition enemy
 
 
 --projectile logic
@@ -47,10 +60,24 @@ moveProjectile secs proj = proj { position = (x + speed proj * secs, y) }
 
 
 --enemy logic and update function
+-- | Update enemies, checking for collisions with projectiles
 updateEnemies :: Float -> GameState -> [Enemy] -> [Enemy]
-updateEnemies secs gstate = filter inBounds . map (moveEnemy secs gstate)
-  where 
-    inBounds enemy = fst (enemyPosition enemy) >= -500
+updateEnemies secs gstate enemies = mapMaybe (updateEnemy secs gstate) enemies
+  where
+    updateEnemy secs gstate enemy
+      | enemyHealth enemy <= 0 = Nothing  -- Remove enemy if health is zero
+      | otherwise = 
+          let enemy' = moveEnemy secs gstate enemy
+              (enemyHit, remainingProjectiles) = checkCollision enemy' (projectiles (player gstate))
+              updatedEnemy = if enemyHit then enemy' { enemyHealth = enemyHealth enemy' - 1 } else enemy'
+          in if enemyHit && enemyHealth updatedEnemy <= 0
+             then Nothing  -- Enemy is defeated, remove it
+             else Just updatedEnemy
+      where
+        -- Check for collision and filter out hit projectiles
+        checkCollision enemy = foldr (\proj (hit, projs) ->
+          if isCollision proj enemy then (True, projs) else (hit, proj : projs)) (False, [])
+
 
 moveEnemy :: Float -> GameState -> Enemy -> Enemy
 moveEnemy secs gstate enemy = enemy { enemyPosition = (x + enemySpeedX * secs, y + enemySpeedY) }
