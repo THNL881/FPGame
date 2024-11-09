@@ -17,27 +17,41 @@ step secs gstate = do
   let 
     newSpawnTimer = spawnTimer gstate + secs
     (gstateNew, resetTimer) = 
-      if newSpawnTimer >= 2 
+      if newSpawnTimer >= 2
         then (spawnKamikazeEnemy gstate, 0) 
         else (gstate, newSpawnTimer)
-    
+
     updatedEnemies = updateEnemies secs gstateNew (enemiesGame gstateNew)
     updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
     updatedPlayer = (player gstateNew) { projectiles = updatedProjectiles }
     updatedScore = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
     defeatedEnemies = length (enemiesGame gstateNew) - length updatedEnemies
+    updatedGState = gamestatus gstateNew
+
 
     newGState = gstate { 
         player = updatedPlayer,
         score = updatedScore,
+        gamestatus = updatedGState,
         spawnTimer = resetTimer,
         world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
         elapsedTime = elapsedTime gstate + secs,
         enemiesGame = updatedEnemies,
         rng = rng gstateNew
         }
-  return newGState 
+    
+    -- writeScoreToFile "testScore.txt" (currentScore updatedScore)
 
+  return newGState 
+ 
+
+-- | Write score to a standard filePath
+writeScoreToFile :: FilePath -> Int -> IO ()
+writeScoreToFile filePath score = do
+    appendFile filePath scoreString
+    putStrLn $ "Score saved to " ++ filePath
+      where 
+        scoreString = show score ++ "\n"
 
 -- | Check if a projectile and an enemy are colliding
 isCollision :: Projectile -> Enemy -> Bool
@@ -105,6 +119,7 @@ input e gstate = do
   case gamestatus newGState of
     Cleared -> do
       let newHighScore = max (currentScore (score newGState)) (highScore (score newGState))
+      writeScoreToFile "Highscores.txt" newHighScore
       return $ newGState { score = Score (currentScore (score newGState)) newHighScore }
     _ -> return newGState
 
