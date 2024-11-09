@@ -21,11 +21,8 @@ updateGame :: Float -> GameState -> IO GameState
 updateGame secs gstate = do
    let newSpawnTimer = spawnTimer gstate + secs
        (gstateNew, resetTimer) = 
-        --  if newSpawnTimer >= 2
-        --    then (spawnKamikazeEnemy gstate, 0) 
-        --    else (gstate, newSpawnTimer)
-         if newSpawnTimer >= 3
-           then (gstate { gamestatus = Cleared}, newSpawnTimer)
+         if newSpawnTimer >= 2
+           then (spawnKamikazeEnemy gstate, 0) 
            else (gstate, newSpawnTimer)
        updatedEnemies = updateEnemies secs gstateNew (enemiesGame gstateNew)
        updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
