@@ -8,6 +8,8 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
 import Data.Maybe ( isNothing, mapMaybe )
+import Debug.Trace
+import System.Exit (exitSuccess)
 
 -- | Handle one iteration of the game 
 
@@ -15,38 +17,50 @@ step :: Float -> GameState -> IO GameState
 step secs gstate = do
   case gamestatus gstate of
     Playing -> updateGame secs gstate
+    Paused  -> pauseGame gstate
     Cleared -> endGame gstate
+
+pauseGame :: GameState -> IO GameState
+pauseGame gstate = return gstate { gamestatus = updateStatus gstate }
 
 updateGame :: Float -> GameState -> IO GameState
 updateGame secs gstate = do
    let newSpawnTimer = spawnTimer gstate + secs
        (gstateNew, resetTimer) = 
-         if newSpawnTimer >= 2
+         if newSpawnTimer >= 1
            then (spawnKamikazeEnemy gstate, 0) 
            else (gstate, newSpawnTimer)
-       updatedEnemies = updateEnemies secs gstateNew (enemiesGame gstateNew)
+
+       updatedEnemies     = updateEnemies secs gstateNew (enemiesGame gstateNew)
        updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
-       updatedPlayer = (player gstateNew) { projectiles = updatedProjectiles }
-       updatedScore = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
-       defeatedEnemies = length (enemiesGame gstateNew) - length updatedEnemies
-       updatedGStatus = gamestatus gstateNew
+       updatedPlayer      = (player gstateNew) { projectiles = updatedProjectiles }
+       updatedScore       = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
+       defeatedEnemies    = length (enemiesGame gstateNew) - length updatedEnemies
+       updatedStatus      = updateStatus gstateNew
 
        newGState = gstate { 
-       player = updatedPlayer,
-       score = updatedScore,
-       gamestatus = updatedGStatus,
-       spawnTimer = resetTimer,
-       world = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
+       player      = updatedPlayer,
+       score       = updatedScore,
+       gamestatus  = updatedStatus,
+       spawnTimer  = resetTimer,
+       world       = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
        elapsedTime = elapsedTime gstate + secs,
        enemiesGame = updatedEnemies,
-       rng = rng gstateNew
+       rng         = rng gstateNew
       } 
    return newGState 
 
+-- | Updates the gamestatus 
+updateStatus :: GameState -> GameStatus
+updateStatus gstate | playerHealth (player gstate) <= 0 = Cleared
+                    | pause (inputState gstate)         = Paused
+                    | otherwise                         = Playing
+  
+
+-- | Ends the game
 endGame :: GameState -> IO GameState
 endGame gstate = do
   let clearedGstate = gstate {gamestatus = Cleared }
-
   return clearedGstate
  
     
@@ -80,7 +94,7 @@ moveProjectile secs proj = proj { position = (x + speed proj * secs, y) }
 --enemy logic and update function
 -- | Update enemies, checking for collisions with projectiles
 updateEnemies :: Float -> GameState -> [Enemy] -> [Enemy]
-updateEnemies secs gstate = filter inBounds . map (updateEnemy secs gstate)
+updateEnemies secs gstate = filter alive . map (updateEnemy secs gstate)
   where 
     updateEnemy secs gstate enemy
       | enemyHealth enemy <= 0 = checkDeath enemy  -- Start death animation when health <= 0
@@ -90,7 +104,7 @@ updateEnemies secs gstate = filter inBounds . map (updateEnemy secs gstate)
               (enemyHit, remainingProjectiles) = checkCollision enemy' (projectiles (player gstate))
               updatedEnemy = if enemyHit then enemy' { enemyHealth = enemyHealth enemy' - 1 } else enemy'
           in if enemyHit && enemyHealth updatedEnemy <= 0
-             then updatedEnemy { isDead = True }  -- Enemy is defeated, remove it
+             then checkDeath updatedEnemy  -- Enemy is defeated, remove it
              else updatedEnemy
       where
         -- Check for collision and filter out hit projectiles     
@@ -103,32 +117,51 @@ updateEnemies secs gstate = filter inBounds . map (updateEnemy secs gstate)
       Nothing                       -> enemy { deathAnimationTimer = Just 0 }
 
     inBounds enemy = fst (enemyPosition enemy) >= -500
-    
+    alive enemy = not (isDead enemy)
 
 moveEnemy :: Float -> GameState -> Enemy -> Enemy
 moveEnemy secs gstate enemy = enemy { enemyPosition = (x + enemySpeedX * secs, y + enemySpeedY) }
   where (x, y) = enemyPosition enemy
         (enemySpeedX, _) = enemySpeed enemy
-        enemySpeedY | snd (playerPosition (player gstate)) > y = 0.5
-                    | snd (playerPosition (player gstate)) < y = -0.5
+        enemySpeedY | snd (playerPosition (player gstate)) > y = 0.4
+                    | snd (playerPosition (player gstate)) < y = -0.4
                     | otherwise = y
 
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
-input e gstate = do
-  let inputState' = inputKey e (inputState gstate)
-  let newPlayer = movePlayer inputState' (shootPlayer inputState' (player gstate))
-  let newGState = gstate { player = newPlayer, inputState = inputState' }
-  case gamestatus newGState of
-    Cleared -> do
-      let newHighScore = max (currentScore (score newGState)) (highScore (score newGState))
-      writeScoreToFile "Highscores.txt" newHighScore
-      return $ newGState { score = Score (currentScore (score newGState)) newHighScore }
-    _ -> return newGState
+input e gstate = 
+  case gamestatus gstate of 
+     Paused -> --Pressing P will toggle pause
+      case e of
+        EventKey (Char 'p') Down _ _ -> do
+          let inputState' = inputKey e (inputState gstate)
+          let newGState = gstate { inputState = inputState', gamestatus = Playing }
+          return newGState
+        _ -> return gstate  -- Ignore all other inputs while paused
+      
+     Playing -> do
+      let inputState' = inputKey e (inputState gstate)
+      let newPlayer   = movePlayer inputState' (shootPlayer inputState' (player gstate))
+      let newGState   = gstate { player = newPlayer, inputState = inputState' }
+      case gamestatus newGState of
+        Cleared -> do
+          let newHighScore = max (currentScore (score newGState)) (highScore (score newGState))
+          writeScoreToFile "Highscores.txt" newHighScore
+          return $ newGState { score = Score (currentScore (score newGState)) newHighScore }
+        _ -> return newGState
+      
+     Cleared -> 
+      case e of -- Press l to exit the game
+        EventKey (Char 'l') Down _ _ -> do
+          writeScoreToFile "Scores.txt" (currentScore (score gstate))
+          exitSuccess
+        _                            -> return gstate
+
 
 -- | Detect key presses and update input state
 inputKey :: Event -> InputState -> InputState
+inputKey (EventKey (Char 'p') Down _ _) is            = is { pause = not (pause is) }
 inputKey (EventKey (Char 'w') Down _ _) is            = is { moveUp = True }
 inputKey (EventKey (Char 'w') Up _ _)   is            = is { moveUp = False }
 inputKey (EventKey (Char 's') Down _ _) is            = is { moveDown = True }
@@ -177,10 +210,10 @@ spawnShooterEnemy gstate = do
 spawnKamikazeEnemy :: GameState -> GameState 
 spawnKamikazeEnemy gstate = gstate { enemiesGame = newEnemy : enemiesGame gstate, rng = newRng}
   where newEnemy = Enemy { enemyType = Kamikaze
-                         , enemyPosition = (200, randomY)
+                         , enemyPosition = (250, randomY)
                          , enemyHealth = 3
                          , enemySpeed = (-80, 0)
                          , isDead = False
                          , deathAnimationTimer = Nothing
                         }
-        (randomY, newRng) = randomR (-200, 200) (rng gstate)  -- Generate random Y and update generator
+        (randomY, newRng) = randomR (-260, 260) (rng gstate)  -- Generate random Y and update generator

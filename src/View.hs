@@ -26,19 +26,22 @@ viewPure gstate = pictures
   , renderSpawnTimer gstate
   , renderEnemiesCount gstate
   , renderEnemyPositions (enemiesGame gstate)
-  , renderEndScreen (gamestatus gstate)]
+  , renderSpecialScreen (gamestatus gstate)]
 
 
-renderEndScreen :: GameStatus -> Picture
-renderEndScreen status 
+-- | Renders text for when gamestatus is not playing
+renderSpecialScreen :: GameStatus -> Picture
+renderSpecialScreen status 
   = case status of 
      Cleared 
        -> translate (-200) 0 $ scale 0.6 0.6 $ color red $ text "YOU DIED"
+     Paused 
+       -> translate (-170) 0 $ scale 0.6 0.6 $ color yellow $ text "PAUSED"
      _ -> Blank
     
 
 
-renderEnemyPositions :: [Enemy] -> Picture
+renderEnemyPositions :: [Enemy] -> Picture --remove before final
 renderEnemyPositions enemies = translate (-380) (-200) $ scale 0.1 0.1 $
   color white $ text $ unlines (map (show . enemyHealth) enemies)
 
@@ -67,7 +70,7 @@ renderKamikazeEnemy enemy = translate x y $ color white $ circleSolid 10
 -- renderElapsedTime :: GameState -> Picture
 -- renderElapsedTime gstate = translate 220 250 $ scale 0.15 0.15 $ color white $ text ("Time Elapsed: " ++ show (round (elapsedTime gstate)))
 
-renderSpawnTimer :: GameState -> Picture
+renderSpawnTimer :: GameState -> Picture --remove before final
 renderSpawnTimer gstate =  translate 100 100 $ scale 0.15 0.15 $ color white $ text ("spawntimer Elapsed: " ++ show (spawnTimer gstate)) 
 
 
@@ -79,7 +82,7 @@ renderProjectileList list = pictures (map renderSingleProjectile list)
 renderSingleProjectile :: Projectile -> Picture
 renderSingleProjectile p = uncurry translate (position p) (color white $ polygon [(0, 0), (10, 2.5), (0, 5)])
 
-renderEnemiesCount :: GameState -> Picture
+renderEnemiesCount :: GameState -> Picture --remove before final
 renderEnemiesCount gstate = translate 0 (-100) $ scale 0.15 0.15 $ color white $ text ("length enemy list: " ++ show (length (enemiesGame gstate))) 
 
 -- | Render the player as a red triangle
