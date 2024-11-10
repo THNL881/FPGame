@@ -24,7 +24,6 @@ spawnKamikazeEnemy gstate = gstate { enemiesGame = newEnemy : enemiesGame gstate
                         }
         (randomY, newRng) = randomR (-260, 260) (rng gstate)  -- Generate random Y and update generator
 
-
 -- Check if a projectile and an enemy are colliding
 isCollision :: Projectile -> Enemy -> Bool
 isCollision proj enemy = abs (px - ex) < 10 && abs (py - ey) < 10

@@ -21,7 +21,7 @@ import System.Exit (exitSuccess)
 import Data.List (partition)
 
 
--- | Handle one iteration of the game 
+-- Handle one iteration of the game 
 
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
@@ -134,7 +134,6 @@ checkPlayerCollisions gstate =
                                                damageTimer = Just 0.5 } -- Set damage timer for 0.5s
                         else player gstate
     in gstate { player = updatedPlayer, enemiesGame = remainingEnemies }  -- Remove colliding enemies
-
 
 -- Check if an enemy is colliding with the player
 isPlayerCollision :: GameState -> Enemy -> Bool
