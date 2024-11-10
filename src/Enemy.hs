@@ -17,7 +17,7 @@ spawnKamikazeEnemy :: GameState -> GameState
 spawnKamikazeEnemy gstate = gstate { enemiesGame = newEnemy : enemiesGame gstate, rng = newRng}
   where newEnemy = Enemy { enemyType = Kamikaze
                          , enemyPosition = (250, randomY)
-                         , enemyHealth = 3
+                         , enemyHealth = 1
                          , enemySpeed = (-110, 0)
                          , isDead = False
                          , deathAnimationTimer = Nothing
