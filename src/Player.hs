@@ -11,7 +11,7 @@ movePlayer input p
   | otherwise      = p
   where
     (x, y) = playerPosition p
-    -- Updated bounds for the player’s vertical movement
+    -- bounds for the player’s vertical movement
     clampPosition (px, py) = (px, max (-250) (min 250 py))  -- Constrain y between -250 and 250
 
 shootPlayer :: InputState -> Player -> Player
