@@ -1,5 +1,6 @@
 module Main where
 
+import Enemy
 import Controller
 import Model
 import View

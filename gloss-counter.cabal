@@ -16,4 +16,7 @@ executable gloss-counter
   other-modules:       Controller
                      , Model
                      , View
+                     , Enemy
+                     , Player
+                     , Projectiles
   default-language:    Haskell2010
