@@ -4,11 +4,11 @@
 module Model where
 import System.Random (StdGen, mkStdGen)
 import Control.Exception(catch, IOException)
-
+{-
 -- Information to show, for debugging or other simple displays
 data InfoToShow = ShowNothing
                 | ShowANumber Int
-                | ShowAChar Char
+                | ShowAChar Char -}
 
 nO_SECS_BETWEEN_CYCLES :: Float
 nO_SECS_BETWEEN_CYCLES = 5
@@ -112,7 +112,7 @@ initializeState = do
                  gamestatus  = Playing,                                         -- Game starts in Playing mode
                  inputState  = InputState False False False False,              -- No keys pressed initially
                  elapsedTime = 0,                                               -- Initial elapsed time set to 0
-                 spawnTimer  = 0,
-                 enemiesGame = [],
-                 rng         = mkStdGen 42
+                 spawnTimer  = 0,                                               -- spawntimer set to 0 initially
+                 enemiesGame = [],                                              -- 0 enemies when the game starts
+                 rng         = mkStdGen 42                                      -- rng for enemy spawns
                }
