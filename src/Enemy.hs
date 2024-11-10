@@ -60,5 +60,5 @@ updateEnemies secs gstate = filter alive . map (updateEnemy secs gstate)
     alive enemy = not (isDead enemy)
     
     -- Function to check if an enemy is hit by any projectile
-    isHit enemy projectiles = any (`isCollision` enemy) projectiles
+    isHit enemy = any (`isCollision` enemy) 
 
