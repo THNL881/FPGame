@@ -74,7 +74,7 @@ data InputState = InputState {
                  , pause     :: Bool -- 'P' key to pause
                  }
 
--- | Type for (x, y) positions
+-- Type for (x, y) positions
 type Position = (Float, Float)
 
 loadHighScore :: FilePath -> IO Int
@@ -86,7 +86,7 @@ loadHighScore filePath = do
     handleReadError :: IOException -> IO String
     handleReadError _ = return "0"  -- Return 0 if file does not exist -> initializing the game
 
--- | Initial game state setup
+-- Initial game state setup
 initializeState :: IO GameState
 initializeState = do
   highScore <-loadHighScore "Scores.txt"

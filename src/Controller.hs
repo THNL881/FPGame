@@ -102,7 +102,7 @@ input e gstate =
       return newGState 
       
      Finished -> 
-      case e of -- Press l to exit the game
+      case e of -- Press l to exit the game and save the score
         EventKey (Char 'l') Down _ _ -> do
           writeScoreToFile "Scores.txt" (currentScore (score gstate))
           exitSuccess
