@@ -1,4 +1,3 @@
-
 -- This module defines how the state changes
 -- in response to time and user input
 module Controller where
@@ -19,7 +18,6 @@ import Data.Maybe ( isNothing, mapMaybe )
 import Debug.Trace
 import System.Exit (exitSuccess)
 import Data.List (partition)
-
 
 -- Handle one iteration of the game 
 
@@ -65,8 +63,6 @@ updateGame secs gstate = do
             rng         = rng gstateNew
         } 
     return newGState
-
-
 
 -- Ends the game
 endGame :: GameState -> IO GameState

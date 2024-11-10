@@ -59,9 +59,6 @@ renderProjectileList list = pictures (map renderSingleProjectile list)
 renderSingleProjectile :: Projectile -> Picture
 renderSingleProjectile p = uncurry translate (position p) (color white $ polygon [(0, 0), (10, 2.5), (0, 5)])
 
-renderEnemiesCount :: GameState -> Picture --remove before final
-renderEnemiesCount gstate = translate 0 (-100) $ scale 0.15 0.15 $ color white $ text ("length enemy list: " ++ show (length (enemiesGame gstate))) 
-
 -- Render the player as a triangle, changing color if damaged
 renderPlayer :: Player -> Picture
 renderPlayer player =

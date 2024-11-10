@@ -39,7 +39,7 @@ data Player = Player {
                  , playerSpeed     :: Float         -- Speed of player movement
                  , projectiles     :: [Projectile]  -- Projectiles fired by player
                  , isFiring        :: Bool          -- True if player is firing
-                 , damageTimer     :: Maybe Float
+                 , damageTimer     :: Maybe Float   -- used to show player has taken damage
                  }
 
 -- Enemy character data

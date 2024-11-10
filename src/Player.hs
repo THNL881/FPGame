@@ -21,6 +21,6 @@ shootPlayer input p
  | not (shoot input) = p { isFiring = False }
  | otherwise = p
  where 
-   -- Make sure the projectile starts at the player's actual position
+   -- Make sure the projectile starts at the player's position
    newProjectile = Projectile { position = playerPosition p, speed = 80 }
 
