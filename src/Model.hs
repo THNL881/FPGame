@@ -52,7 +52,6 @@ data Enemy = Enemy {
                  , deathAnimationTimer :: Maybe Float      -- times the animation when an enemy dies
                  }
               
-
 data EnemyType = Kamikaze --originally used for possibility of multiple enemies
 
 -- Projectile data
