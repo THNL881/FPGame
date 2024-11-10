@@ -1,6 +1,6 @@
 
--- | This module defines how to turn
---   the game state into a picture
+-- This module defines how to turn
+-- the game state into a picture
 module View where
 
 import Graphics.Gloss
@@ -12,7 +12,7 @@ view :: GameState -> IO Picture
 view = return . viewPure
 
 
--- | Render game elements based on game state
+-- Render game elements based on game state
 viewPure gstate = pictures 
     [ renderPlayer (player gstate)
     , renderRoofFloor (world gstate)
@@ -25,7 +25,7 @@ viewPure gstate = pictures
 
 
 
--- | Renders text for when gamestatus is not playing
+-- Renders text for when gamestatus is not playing
 renderSpecialScreen :: GameStatus -> Picture
 renderSpecialScreen status 
   = case status of 
@@ -57,10 +57,6 @@ renderKamikazeEnemy enemy = translate x y $ color white $ circleSolid 10
   where
     (x, y) = enemyPosition enemy
 
--- | Render the elapsed time
--- renderElapsedTime :: GameState -> Picture
--- renderElapsedTime gstate = translate 220 250 $ scale 0.15 0.15 $ color white $ text ("Time Elapsed: " ++ show (round (elapsedTime gstate)))
-
 renderSpawnTimer :: GameState -> Picture --remove before final
 renderSpawnTimer gstate =  translate 100 100 $ scale 0.15 0.15 $ color white $ text ("spawntimer Elapsed: " ++ show (spawnTimer gstate)) 
 
@@ -74,7 +70,7 @@ renderSingleProjectile p = uncurry translate (position p) (color white $ polygon
 renderEnemiesCount :: GameState -> Picture --remove before final
 renderEnemiesCount gstate = translate 0 (-100) $ scale 0.15 0.15 $ color white $ text ("length enemy list: " ++ show (length (enemiesGame gstate))) 
 
--- | Render the player as a triangle, changing color if damaged
+-- Render the player as a triangle, changing color if damaged
 renderPlayer :: Player -> Picture
 renderPlayer player =
     let (x, y) = playerPosition player
@@ -83,7 +79,7 @@ renderPlayer player =
     in translate x y $ color playerColor $ polygon [(0, 30), (-30, -30), (30, -30)]
 
 
--- | Render scrolling roof and floor
+-- Render scrolling roof and floor
 renderRoofFloor :: World -> Picture
 renderRoofFloor world = pictures [roof, floor]
   where
@@ -100,17 +96,17 @@ renderRoofFloor world = pictures [roof, floor]
     windowWidth = 800
 
 
--- | Render the high score
+-- Render the high score
 renderHighScore :: GameState -> Picture
 renderHighScore gstate = translate (-380) 260 $ scale 0.15 0.15 $ color white $ text ("HighScore: " ++ show (highScore (score gstate)))
 
 
--- | Render the current score
+-- Render the current score
 renderScore :: GameState -> Picture
 renderScore gstate = translate (-380) 240 $ scale 0.15 0.15 $ color white $ text ("Score: " ++ show (currentScore (score gstate)))
 
 
--- | Render the player's health in the top left corner
+-- Render the player's health in the top left corner
 renderHP :: GameState -> Picture
 renderHP gstate =
     translate (-380) 220 $ scale 0.15 0.15 $ color white $ text ("HP: " ++ show (playerHealth (player gstate)))

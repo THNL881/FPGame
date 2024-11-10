@@ -1,6 +1,6 @@
 
--- | This module contains the data types
---   which represent the state of the game
+-- This module contains the data types
+-- which represent the state of the game
 module Model where
 import System.Random (StdGen, mkStdGen)
 import Control.Exception(catch, IOException)
@@ -13,8 +13,7 @@ data InfoToShow = ShowNothing
 nO_SECS_BETWEEN_CYCLES :: Float
 nO_SECS_BETWEEN_CYCLES = 5
 
-
--- | Complete game state, including player, world, score, and status
+-- Complete game state, including player, world, score, and status
 data GameState = GameState {
                    world            :: World      -- The game world (scrolling, enemies)
                  , player           :: Player     -- The player character
@@ -28,11 +27,11 @@ data GameState = GameState {
                  }
 
 
--- | Game status: playing, paused, or cleared
+-- Game status: playing, paused, or cleared
 data GameStatus = Playing | Paused | Finished
 
 
--- | Representation of the game world
+-- Representation of the game world
 data World = World {
                    scrollPosition :: Float  -- How far the world has scrolled
                  , scrollSpeed    :: Float  -- Speed of scrolling
@@ -40,7 +39,7 @@ data World = World {
                  }
 
 
--- | The player character
+-- The player character
 data Player = Player {
                    playerPosition  :: Position      -- Current position
                  , playerHealth    :: Int           -- Health of the player
@@ -53,7 +52,7 @@ data Player = Player {
                  }
 
 
--- | Enemy character data
+-- Enemy character data
 data Enemy = Enemy {
                    enemyType           :: EnemyType        -- Type of enemy (Shooter, Kamikaze, etc.)
                  , enemyPosition       :: Position         -- Position of the enemy
@@ -64,46 +63,29 @@ data Enemy = Enemy {
                  }
               
 
-data EnemyType = Shooter | Kamikaze
+data EnemyType = Kamikaze --originally used for possibility of multiple enemies
 
-
--- -- | Health pickup data
--- data HealthPickup = HealthPickup {
---                    pickupPosition :: Position -- Position of pickup
---                  , isActive       :: Bool     -- True if pickup is active
---                  }
-
-
--- | Projectile data
+-- Projectile data
 data Projectile = Projectile {
                    position :: Position -- Position of projectile
                  , speed    :: Float    -- Speed of projectile
                  }
 
 
--- | Game score data
+-- Game score data
 data Score = Score {
                    currentScore :: Int -- Current score
                  , highScore    :: Int -- High score
                  }
 
 
--- | Input state tracking specific keys
+-- Input state tracking specific keys
 data InputState = InputState {
                    moveUp    :: Bool -- 'W' key pressed
                  , moveDown  :: Bool -- 'S' key pressed
                  , shoot     :: Bool -- Spacebar to shoot
                  , pause     :: Bool -- 'P' key to pause
                  }
-
-
--- | Boss enemy data
-data Boss = Boss {
-                   bossHealth   :: Int       -- Boss health
-                 , bossPosition :: Position  -- Boss position
-                 , bossActive   :: Bool      -- True if boss is active
-                 }
-
 
 -- | Type for (x, y) positions
 type Position = (Float, Float)

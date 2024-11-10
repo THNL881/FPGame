@@ -1,8 +1,9 @@
 
--- | This module defines how the state changes
---   in response to time and user input
+-- This module defines how the state changes
+-- in response to time and user input
 module Controller where
 
+--imports
 import Projectiles 
 import Player
 import Enemy
@@ -67,26 +68,26 @@ updateGame secs gstate = do
 
 
 
--- | Ends the game
+-- Ends the game
 endGame :: GameState -> IO GameState
 endGame gstate = do
   let clearedGstate = gstate { gamestatus = Finished }
   return clearedGstate
  
--- | Updates the gamestatus 
+-- Updates the gamestatus 
 updateStatus :: GameState -> GameStatus
 updateStatus gstate | playerHealth (player gstate) <= 0 = Finished
                     | pause (inputState gstate)         = Paused
                     | otherwise                         = Playing
     
--- | Write score to a standard filePath
+-- Write score to a standard filePath
 writeScoreToFile :: FilePath -> Int -> IO ()
 writeScoreToFile filePath score = do
     appendFile filePath scoreString
       where 
         scoreString = show score ++ "\n"
 
--- | Handle user input
+-- Handle user input
 input :: Event -> GameState -> IO GameState
 input e gstate = 
   case gamestatus gstate of 
@@ -112,7 +113,7 @@ input e gstate =
         _                            -> return gstate
 
 
--- | Detect key presses and update input state
+-- Detect key presses and update input state
 inputKey :: Event -> InputState -> InputState
 inputKey (EventKey (Char 'p') Down _ _) is            = is { pause = not (pause is) }
 inputKey (EventKey (Char 'w') Down _ _) is            = is { moveUp = True }
@@ -123,7 +124,7 @@ inputKey (EventKey (SpecialKey KeySpace) Down _ _) is = is { shoot = True }
 inputKey (EventKey (SpecialKey KeySpace) Up _ _) is   = is { shoot = False }
 inputKey _ is = is
 
--- | Check for collisions between the player and kamikaze enemies
+-- Check for collisions between the player and kamikaze enemies
 checkPlayerCollisions :: GameState -> GameState
 checkPlayerCollisions gstate =
     let (collidingEnemies, remainingEnemies) = partition (isPlayerCollision gstate) (enemiesGame gstate)
@@ -135,7 +136,7 @@ checkPlayerCollisions gstate =
     in gstate { player = updatedPlayer, enemiesGame = remainingEnemies }  -- Remove colliding enemies
 
 
--- | Check if an enemy is colliding with the player
+-- Check if an enemy is colliding with the player
 isPlayerCollision :: GameState -> Enemy -> Bool
 isPlayerCollision gstate enemy =
     let (px, py) = playerPosition (player gstate)

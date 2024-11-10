@@ -1,13 +1,13 @@
--- | This module handles all player logic
+-- This module handles all player logic
 
 module Player where
 
 import Model
--- | Move player based on input state, clamping between roof and floor
+-- Move player based on input state, clamping between roof and floor
 movePlayer :: InputState -> Player -> Player
 movePlayer input p
-  | moveUp input   = p { playerPosition = clampPosition (x, y + playerSpeed p) } -- `W` key should move up
-  | moveDown input = p { playerPosition = clampPosition (x, y - playerSpeed p) } -- `S` key should move down
+  | moveUp input   = p { playerPosition = clampPosition (x, y + playerSpeed p) } -- 'W' key should move up
+  | moveDown input = p { playerPosition = clampPosition (x, y - playerSpeed p) } -- 'S' key should move down
   | otherwise      = p
   where
     (x, y) = playerPosition p

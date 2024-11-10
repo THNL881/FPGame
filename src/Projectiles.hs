@@ -1,4 +1,4 @@
--- | This module handles all the logic surrounding Projectiles
+-- This module handles all the logic surrounding Projectiles
 
 module Projectiles where
 

@@ -1,5 +1,5 @@
--- | This module handles enemy logic 
---   that has nothing to do with IO 
+-- This module handles enemy logic 
+-- that has nothing to do with IO (so it is pure)
 
 module Enemy where
 import Model
@@ -26,15 +26,14 @@ spawnKamikazeEnemy gstate = gstate { enemiesGame = newEnemy : enemiesGame gstate
         (randomY, newRng) = randomR (-260, 260) (rng gstate)  -- Generate random Y and update generator
 
 
--- | Check if a projectile and an enemy are colliding
+-- Check if a projectile and an enemy are colliding
 isCollision :: Projectile -> Enemy -> Bool
 isCollision proj enemy = abs (px - ex) < 10 && abs (py - ey) < 10
   where
     (px, py) = position proj
     (ex, ey) = enemyPosition enemy
 
---enemy logic and update function
--- | Update enemies, checking for collisions with projectiles
+-- enemy logic and update function
 updateEnemies :: Float -> GameState -> [Enemy] -> [Enemy]
 updateEnemies secs gstate = filter alive . map (updateEnemy secs gstate)
   where 
@@ -49,7 +48,7 @@ updateEnemies secs gstate = filter alive . map (updateEnemy secs gstate)
              then checkDeath updatedEnemy  -- Enemy is defeated, remove it
              else updatedEnemy
       where
-        -- Check for collision and filter out hit projectiles     
+        -- Check for collision and filter out hit projectiles (this doesn't work sadly)  
         checkCollision enemy = foldr (\proj (hit, projs) ->
           if isCollision proj enemy then (True, projs) else (hit, proj : projs)) (False, [])
 
