@@ -33,7 +33,7 @@ viewPure gstate = pictures
 renderSpecialScreen :: GameStatus -> Picture
 renderSpecialScreen status 
   = case status of 
-     Cleared 
+     Finished 
        -> translate (-200) 0 $ scale 0.6 0.6 $ color red $ text "YOU DIED"
      Paused 
        -> translate (-170) 0 $ scale 0.6 0.6 $ color yellow $ text "PAUSED"

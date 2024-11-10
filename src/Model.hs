@@ -30,7 +30,7 @@ data GameState = GameState {
 
 
 -- | Game status: playing, paused, or cleared
-data GameStatus = Playing | Paused | Cleared
+data GameStatus = Playing | Paused | Finished
 
 
 -- | Representation of the game world

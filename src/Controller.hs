@@ -18,7 +18,7 @@ step secs gstate = do
   case gamestatus gstate of
     Playing -> updateGame secs gstate
     Paused  -> pauseGame gstate
-    Cleared -> endGame gstate
+    Finished -> endGame gstate
 
 pauseGame :: GameState -> IO GameState
 pauseGame gstate = return gstate { gamestatus = updateStatus gstate }
@@ -52,7 +52,7 @@ updateGame secs gstate = do
 
 -- | Updates the gamestatus 
 updateStatus :: GameState -> GameStatus
-updateStatus gstate | playerHealth (player gstate) <= 0 = Cleared
+updateStatus gstate | playerHealth (player gstate) <= 0 = Finished
                     | pause (inputState gstate)         = Paused
                     | otherwise                         = Playing
   
@@ -60,7 +60,7 @@ updateStatus gstate | playerHealth (player gstate) <= 0 = Cleared
 -- | Ends the game
 endGame :: GameState -> IO GameState
 endGame gstate = do
-  let clearedGstate = gstate {gamestatus = Cleared }
+  let clearedGstate = gstate { gamestatus = Finished }
   return clearedGstate
  
     
@@ -144,14 +144,9 @@ input e gstate =
       let inputState' = inputKey e (inputState gstate)
       let newPlayer   = movePlayer inputState' (shootPlayer inputState' (player gstate))
       let newGState   = gstate { player = newPlayer, inputState = inputState' }
-      case gamestatus newGState of
-        Cleared -> do
-          let newHighScore = max (currentScore (score newGState)) (highScore (score newGState))
-          writeScoreToFile "Highscores.txt" newHighScore
-          return $ newGState { score = Score (currentScore (score newGState)) newHighScore }
-        _ -> return newGState
+      return newGState 
       
-     Cleared -> 
+     Finished -> 
       case e of -- Press l to exit the game
         EventKey (Char 'l') Down _ _ -> do
           writeScoreToFile "Scores.txt" (currentScore (score gstate))
