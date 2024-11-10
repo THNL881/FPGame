@@ -10,8 +10,8 @@ moveEnemy :: Float -> GameState -> Enemy -> Enemy
 moveEnemy secs gstate enemy = enemy { enemyPosition = (x + enemySpeedX * secs, y + enemySpeedY) }
   where (x, y) = enemyPosition enemy
         (enemySpeedX, _) = enemySpeed enemy
-        enemySpeedY | snd (playerPosition (player gstate)) > y = 0.4
-                    | snd (playerPosition (player gstate)) < y = -0.4
+        enemySpeedY | snd (playerPosition (player gstate)) > y = 0.3
+                    | snd (playerPosition (player gstate)) < y = -0.3
                     | otherwise = y
 
 spawnKamikazeEnemy :: GameState -> GameState 
@@ -19,25 +19,11 @@ spawnKamikazeEnemy gstate = gstate { enemiesGame = newEnemy : enemiesGame gstate
   where newEnemy = Enemy { enemyType = Kamikaze
                          , enemyPosition = (250, randomY)
                          , enemyHealth = 3
-                         , enemySpeed = (-80, 0)
+                         , enemySpeed = (-110, 0)
                          , isDead = False
                          , deathAnimationTimer = Nothing
                         }
         (randomY, newRng) = randomR (-260, 260) (rng gstate)  -- Generate random Y and update generator
-
--- Misschien weghalen?
--- spawnShooterEnemy :: GameState -> IO GameState
--- spawnShooterEnemy gstate = do
---     randomY <- randomRIO (-200, 200)  -- Y-coordinate range from -200 to 200
---     let newEnemy = Enemy { enemyType = Shooter
---                          , enemyPosition = (400, randomY)  -- Starting position
---                          , enemyHealth = 100
---                          , enemySpeed = (-3, 0)
---                          , isDead = False
---                          , deathAnimationTimer = Nothing
---                          }
---     return gstate { enemiesGame = newEnemy : enemiesGame gstate } --needs to be randomized
-
 
 
 -- | Check if a projectile and an enemy are colliding

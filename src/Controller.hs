@@ -37,7 +37,7 @@ updateGame secs gstate = do
     let gstateWithCollisions = checkPlayerCollisions gstate
         newSpawnTimer = spawnTimer gstateWithCollisions + secs
         (gstateNew, resetTimer) = 
-            if newSpawnTimer >= 1
+            if newSpawnTimer >= 0.6
                 then (spawnKamikazeEnemy gstateWithCollisions, 0) 
                 else (gstateWithCollisions, newSpawnTimer)
 

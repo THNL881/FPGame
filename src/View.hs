@@ -21,9 +21,6 @@ viewPure gstate = pictures
     , renderHP gstate
     , renderProjectileList (projectiles (player gstate))
     , renderEnemies (enemiesGame gstate)
-    , renderSpawnTimer gstate
-    , renderEnemiesCount gstate
-    , renderEnemyPositions (enemiesGame gstate)
     , renderSpecialScreen (gamestatus gstate)]
 
 
@@ -38,11 +35,6 @@ renderSpecialScreen status
        -> translate (-170) 0 $ scale 0.6 0.6 $ color yellow $ text "PAUSED"
      _ -> Blank
     
-
-
-renderEnemyPositions :: [Enemy] -> Picture --remove before final
-renderEnemyPositions enemies = translate (-380) (-200) $ scale 0.1 0.1 $
-  color white $ text $ unlines (map (show . enemyHealth) enemies)
 
 renderDeathAnimation :: Enemy -> Picture
 renderDeathAnimation enemy = case deathAnimationTimer enemy of 
@@ -72,10 +64,8 @@ renderKamikazeEnemy enemy = translate x y $ color white $ circleSolid 10
 renderSpawnTimer :: GameState -> Picture --remove before final
 renderSpawnTimer gstate =  translate 100 100 $ scale 0.15 0.15 $ color white $ text ("spawntimer Elapsed: " ++ show (spawnTimer gstate)) 
 
-
 renderProjectileList :: [Projectile] -> Picture
 renderProjectileList list = pictures (map renderSingleProjectile list)
-
 
 -- Render a single projectile as a 5x5 white triangle
 renderSingleProjectile :: Projectile -> Picture
@@ -91,8 +81,6 @@ renderPlayer player =
         -- Set player color to red if damageTimer is active, otherwise white
         playerColor = if isJust (damageTimer player) then red else white
     in translate x y $ color playerColor $ polygon [(0, 30), (-30, -30), (30, -30)]
-
-
 
 
 -- | Render scrolling roof and floor

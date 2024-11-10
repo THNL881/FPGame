@@ -3,7 +3,7 @@
 --   which represent the state of the game
 module Model where
 import System.Random (StdGen, mkStdGen)
-
+import Control.Exception(catch, IOException)
 
 -- Information to show, for debugging or other simple displays
 data InfoToShow = ShowNothing
@@ -25,7 +25,6 @@ data GameState = GameState {
                  , spawnTimer       :: Float      -- Timer that tracks shooting enemies interval
                  , enemiesGame      :: [Enemy]    -- Enemies in the game
                  , rng              :: StdGen     -- Pure randomness
-                 , debugString      :: String     -- debugging things
                  }
 
 
@@ -110,17 +109,28 @@ data Boss = Boss {
 type Position = (Float, Float)
 
 
+loadHighScore :: FilePath -> IO Int
+loadHighScore filePath = do
+    contents <- catch (readFile filePath) handleReadError
+    let scores = map read (lines contents)
+    return $ if null scores then 0 else maximum scores
+  where  
+    handleReadError :: IOException -> IO String
+    handleReadError _ = return "0"  -- Return 0 if file does not exist -> initializing the game
+
+
 -- | Initial game state setup
-initialState :: GameState
-initialState = GameState {
-                 world       = World 0 100 [],                          -- Initial world state
+initializeState :: IO GameState
+initializeState = do
+  highScore <-loadHighScore "Scores.txt"
+  return GameState {
+                 world       = World 0 100 [],                                  -- Initial world state
                  player      = Player (-360, 0) 3 3 1 20 [] False Nothing,      -- Player initial state at (-380, 0)
-                 score       = Score 0 0,                               -- Initial score and high score
-                 gamestatus  = Playing,                                 -- Game starts in Playing mode
-                 inputState  = InputState False False False False,      -- No keys pressed initially
-                 elapsedTime = 0,                                       -- Initial elapsed time set to 0
+                 score       = Score 0 highScore,                               -- Initial score and high score
+                 gamestatus  = Playing,                                         -- Game starts in Playing mode
+                 inputState  = InputState False False False False,              -- No keys pressed initially
+                 elapsedTime = 0,                                               -- Initial elapsed time set to 0
                  spawnTimer  = 0,
                  enemiesGame = [],
-                 rng         = mkStdGen 42,
-                 debugString = []
+                 rng         = mkStdGen 42
                }
