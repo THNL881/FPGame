@@ -11,7 +11,6 @@ import Data.Maybe (isJust, isNothing)
 view :: GameState -> IO Picture
 view = return . viewPure
 
-
 -- Render game elements based on game state
 viewPure gstate = pictures 
     [ renderPlayer (player gstate)
@@ -22,8 +21,6 @@ viewPure gstate = pictures
     , renderProjectileList (projectiles (player gstate))
     , renderEnemies (enemiesGame gstate)
     , renderSpecialScreen (gamestatus gstate)]
-
-
 
 -- Renders text for when gamestatus is not playing
 renderSpecialScreen :: GameStatus -> Picture
@@ -56,9 +53,6 @@ renderKamikazeEnemy :: Enemy -> Picture
 renderKamikazeEnemy enemy = translate x y $ color white $ circleSolid 10
   where
     (x, y) = enemyPosition enemy
-
-renderSpawnTimer :: GameState -> Picture --remove before final
-renderSpawnTimer gstate =  translate 100 100 $ scale 0.15 0.15 $ color white $ text ("spawntimer Elapsed: " ++ show (spawnTimer gstate)) 
 
 renderProjectileList :: [Projectile] -> Picture
 renderProjectileList list = pictures (map renderSingleProjectile list)
@@ -110,8 +104,6 @@ renderScore gstate = translate (-380) 240 $ scale 0.15 0.15 $ color white $ text
 renderHP :: GameState -> Picture
 renderHP gstate =
     translate (-380) 220 $ scale 0.15 0.15 $ color white $ text ("HP: " ++ show (playerHealth (player gstate)))
-
-
 
 -- Custom color definitions
 darkBlue, customBlue :: Color
