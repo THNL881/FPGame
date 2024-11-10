@@ -13,20 +13,19 @@ view = return . viewPure
 
 
 -- | Render game elements based on game state
-viewPure :: GameState -> Picture
 viewPure gstate = pictures 
-  [ renderPlayer (player gstate)
-  , renderRoofFloor (world gstate)
-  , renderHighScore gstate
-  , renderScore gstate
-  , renderHP gstate
-  --, renderElapsedTime gstate
-  , renderProjectileList (projectiles (player gstate))
-  , renderEnemies (enemiesGame gstate)
-  , renderSpawnTimer gstate
-  , renderEnemiesCount gstate
-  , renderEnemyPositions (enemiesGame gstate)
-  , renderSpecialScreen (gamestatus gstate)]
+    [ renderPlayer (player gstate)
+    , renderRoofFloor (world gstate)
+    , renderHighScore gstate
+    , renderScore gstate
+    , renderHP gstate
+    , renderProjectileList (projectiles (player gstate))
+    , renderEnemies (enemiesGame gstate)
+    , renderSpawnTimer gstate
+    , renderEnemiesCount gstate
+    , renderEnemyPositions (enemiesGame gstate)
+    , renderSpecialScreen (gamestatus gstate)]
+
 
 
 -- | Renders text for when gamestatus is not playing
@@ -85,11 +84,15 @@ renderSingleProjectile p = uncurry translate (position p) (color white $ polygon
 renderEnemiesCount :: GameState -> Picture --remove before final
 renderEnemiesCount gstate = translate 0 (-100) $ scale 0.15 0.15 $ color white $ text ("length enemy list: " ++ show (length (enemiesGame gstate))) 
 
--- | Render the player as a red triangle
+-- | Render the player as a triangle, changing color if damaged
 renderPlayer :: Player -> Picture
-renderPlayer player = translate x y $ color white $ polygon [(0, 30), (-30, -30), (30, -30)]
-  where
-    (x, y) = playerPosition player
+renderPlayer player =
+    let (x, y) = playerPosition player
+        -- Set player color to red if damageTimer is active, otherwise white
+        playerColor = if isJust (damageTimer player) then red else white
+    in translate x y $ color playerColor $ polygon [(0, 30), (-30, -30), (30, -30)]
+
+
 
 
 -- | Render scrolling roof and floor
@@ -119,9 +122,11 @@ renderScore :: GameState -> Picture
 renderScore gstate = translate (-380) 240 $ scale 0.15 0.15 $ color white $ text ("Score: " ++ show (currentScore (score gstate)))
 
 
--- | Render the player's health
+-- | Render the player's health in the top left corner
 renderHP :: GameState -> Picture
-renderHP gstate = translate (-380) (-275) $ scale 0.15 0.15 $ color white $ text ("HP: " ++ show (playerHealth (player gstate)))
+renderHP gstate =
+    translate (-380) 220 $ scale 0.15 0.15 $ color white $ text ("HP: " ++ show (playerHealth (player gstate)))
+
 
 
 -- Custom color definitions

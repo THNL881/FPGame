@@ -17,6 +17,8 @@ import System.Random
 import Data.Maybe ( isNothing, mapMaybe )
 import Debug.Trace
 import System.Exit (exitSuccess)
+import Data.List (partition)
+
 
 -- | Handle one iteration of the game 
 
@@ -32,30 +34,38 @@ pauseGame gstate = return gstate { gamestatus = updateStatus gstate }
 
 updateGame :: Float -> GameState -> IO GameState
 updateGame secs gstate = do
-   let newSpawnTimer = spawnTimer gstate + secs
-       (gstateNew, resetTimer) = 
-         if newSpawnTimer >= 1
-           then (spawnKamikazeEnemy gstate, 0) 
-           else (gstate, newSpawnTimer)
+    let gstateWithCollisions = checkPlayerCollisions gstate
+        newSpawnTimer = spawnTimer gstateWithCollisions + secs
+        (gstateNew, resetTimer) = 
+            if newSpawnTimer >= 1
+                then (spawnKamikazeEnemy gstateWithCollisions, 0) 
+                else (gstateWithCollisions, newSpawnTimer)
 
-       updatedEnemies     = updateEnemies secs gstateNew (enemiesGame gstateNew)
-       updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
-       updatedPlayer      = (player gstateNew) { projectiles = updatedProjectiles }
-       updatedScore       = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
-       defeatedEnemies    = length (enemiesGame gstateNew) - length updatedEnemies
-       updatedStatus      = updateStatus gstateNew
+        updatedEnemies     = updateEnemies secs gstateNew (enemiesGame gstateNew)
+        updatedProjectiles = updateProjectiles secs (projectiles (player gstateNew))
+        updatedPlayer      = (player gstateNew) { 
+            projectiles = updatedProjectiles,
+            damageTimer = case damageTimer (player gstateNew) of
+                            Just t -> if t - secs <= 0 then Nothing else Just (t - secs)
+                            Nothing -> Nothing
+        }
+        defeatedEnemies    = length (enemiesGame gstateNew) - length updatedEnemies
+        updatedScore       = (score gstateNew) { currentScore = currentScore (score gstateNew) + 5 * defeatedEnemies }
+        updatedStatus      = updateStatus gstateNew
 
-       newGState = gstate { 
-       player      = updatedPlayer,
-       score       = updatedScore,
-       gamestatus  = updatedStatus,
-       spawnTimer  = resetTimer,
-       world       = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
-       elapsedTime = elapsedTime gstate + secs,
-       enemiesGame = updatedEnemies,
-       rng         = rng gstateNew
-      } 
-   return newGState 
+        newGState = gstateNew { 
+            player      = updatedPlayer,
+            score       = updatedScore,
+            gamestatus  = updatedStatus,
+            spawnTimer  = resetTimer,
+            world       = (world gstate) { scrollPosition = scrollPosition (world gstate) + scrollSpeed (world gstate) * secs },
+            elapsedTime = elapsedTime gstate + secs,
+            enemiesGame = updatedEnemies,
+            rng         = rng gstateNew
+        } 
+    return newGState
+
+
 
 -- | Ends the game
 endGame :: GameState -> IO GameState
@@ -112,6 +122,27 @@ inputKey (EventKey (Char 's') Up _ _)   is            = is { moveDown = False }
 inputKey (EventKey (SpecialKey KeySpace) Down _ _) is = is { shoot = True }
 inputKey (EventKey (SpecialKey KeySpace) Up _ _) is   = is { shoot = False }
 inputKey _ is = is
+
+-- | Check for collisions between the player and kamikaze enemies
+checkPlayerCollisions :: GameState -> GameState
+checkPlayerCollisions gstate =
+    let (collidingEnemies, remainingEnemies) = partition (isPlayerCollision gstate) (enemiesGame gstate)
+        playerHit = not (null collidingEnemies)
+        updatedPlayer = if playerHit
+                        then (player gstate) { playerHealth = max 0 (playerHealth (player gstate) - 1),
+                                               damageTimer = Just 0.5 } -- Set damage timer for 0.5s
+                        else player gstate
+    in gstate { player = updatedPlayer, enemiesGame = remainingEnemies }  -- Remove colliding enemies
+
+
+-- | Check if an enemy is colliding with the player
+isPlayerCollision :: GameState -> Enemy -> Bool
+isPlayerCollision gstate enemy =
+    let (px, py) = playerPosition (player gstate)
+        (ex, ey) = enemyPosition enemy
+        collisionRadius = 15 -- Adjust as needed for collision size
+    in abs (px - ex) < collisionRadius && abs (py - ey) < collisionRadius
+
 
 
 

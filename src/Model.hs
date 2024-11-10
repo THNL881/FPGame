@@ -50,6 +50,7 @@ data Player = Player {
                  , playerSpeed     :: Float         -- Speed of player movement
                  , projectiles     :: [Projectile]  -- Projectiles fired by player
                  , isFiring        :: Bool          -- True if player is firing
+                 , damageTimer     :: Maybe Float
                  }
 
 
@@ -113,7 +114,7 @@ type Position = (Float, Float)
 initialState :: GameState
 initialState = GameState {
                  world       = World 0 100 [],                          -- Initial world state
-                 player      = Player (-360, 0) 3 3 1 20 [] False,      -- Player initial state at (-380, 0)
+                 player      = Player (-360, 0) 3 3 1 20 [] False Nothing,      -- Player initial state at (-380, 0)
                  score       = Score 0 0,                               -- Initial score and high score
                  gamestatus  = Playing,                                 -- Game starts in Playing mode
                  inputState  = InputState False False False False,      -- No keys pressed initially
