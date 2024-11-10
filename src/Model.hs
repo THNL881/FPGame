@@ -4,11 +4,6 @@
 module Model where
 import System.Random (StdGen, mkStdGen)
 import Control.Exception(catch, IOException)
-{-
--- Information to show, for debugging or other simple displays
-data InfoToShow = ShowNothing
-                | ShowANumber Int
-                | ShowAChar Char -}
 
 nO_SECS_BETWEEN_CYCLES :: Float
 nO_SECS_BETWEEN_CYCLES = 5
