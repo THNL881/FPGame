@@ -1,4 +1,3 @@
-
 -- This module contains the data types
 -- which represent the state of the game
 module Model where
@@ -21,10 +20,8 @@ data GameState = GameState {
                  , rng              :: StdGen     -- Pure randomness
                  }
 
-
 -- Game status: playing, paused, or cleared
 data GameStatus = Playing | Paused | Finished
-
 
 -- Representation of the game world
 data World = World {
@@ -32,7 +29,6 @@ data World = World {
                  , scrollSpeed    :: Float  -- Speed of scrolling
                  , enemies        :: [Enemy] -- List of enemies in the world
                  }
-
 
 -- The player character
 data Player = Player {
@@ -45,7 +41,6 @@ data Player = Player {
                  , isFiring        :: Bool          -- True if player is firing
                  , damageTimer     :: Maybe Float
                  }
-
 
 -- Enemy character data
 data Enemy = Enemy {
@@ -66,13 +61,11 @@ data Projectile = Projectile {
                  , speed    :: Float    -- Speed of projectile
                  }
 
-
 -- Game score data
 data Score = Score {
                    currentScore :: Int -- Current score
                  , highScore    :: Int -- High score
                  }
-
 
 -- Input state tracking specific keys
 data InputState = InputState {
@@ -85,7 +78,6 @@ data InputState = InputState {
 -- | Type for (x, y) positions
 type Position = (Float, Float)
 
-
 loadHighScore :: FilePath -> IO Int
 loadHighScore filePath = do
     contents <- catch (readFile filePath) handleReadError
@@ -94,7 +86,6 @@ loadHighScore filePath = do
   where  
     handleReadError :: IOException -> IO String
     handleReadError _ = return "0"  -- Return 0 if file does not exist -> initializing the game
-
 
 -- | Initial game state setup
 initializeState :: IO GameState

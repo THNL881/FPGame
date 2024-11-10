@@ -1,7 +1,6 @@
 -- This module handles all the logic surrounding Projectiles
-
 module Projectiles where
-
+  
 import Model
 
 -- projectile logic
@@ -11,7 +10,6 @@ updateProjectiles secs = filter inBounds . map (moveProjectile secs)
   where
     inBounds proj = fst (position proj) <= 450 -- Keep only projectiles within bounds
     
-
 moveProjectile :: Float -> Projectile -> Projectile
 moveProjectile secs proj = proj { position = (x + speed proj * secs, y) }
   where

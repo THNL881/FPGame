@@ -1,4 +1,3 @@
-
 -- This module defines how to turn
 -- the game state into a picture
 module View where
@@ -32,7 +31,6 @@ renderSpecialScreen status
        -> translate (-170) 0 $ scale 0.6 0.6 $ color yellow $ text "PAUSED"
      _ -> Blank
     
-
 renderDeathAnimation :: Enemy -> Picture
 renderDeathAnimation enemy = case deathAnimationTimer enemy of 
   Just progress -> let (x, y) = enemyPosition enemy
@@ -72,7 +70,6 @@ renderPlayer player =
         playerColor = if isJust (damageTimer player) then red else white
     in translate x y $ color playerColor $ polygon [(0, 30), (-30, -30), (30, -30)]
 
-
 -- Render scrolling roof and floor
 renderRoofFloor :: World -> Picture
 renderRoofFloor world = pictures [roof, floor]
@@ -89,16 +86,13 @@ renderRoofFloor world = pictures [roof, floor]
 
     windowWidth = 800
 
-
 -- Render the high score
 renderHighScore :: GameState -> Picture
 renderHighScore gstate = translate (-380) 260 $ scale 0.15 0.15 $ color white $ text ("HighScore: " ++ show (highScore (score gstate)))
 
-
 -- Render the current score
 renderScore :: GameState -> Picture
 renderScore gstate = translate (-380) 240 $ scale 0.15 0.15 $ color white $ text ("Score: " ++ show (currentScore (score gstate)))
-
 
 -- Render the player's health in the top left corner
 renderHP :: GameState -> Picture
